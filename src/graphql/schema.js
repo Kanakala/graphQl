@@ -1,4 +1,4 @@
-export default `
+module.exports = `
   enum AllowedDepartment {
     OPS
     FIN

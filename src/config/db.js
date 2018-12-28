@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import constants from './constants';
+const mongoose = require('mongoose');
+const constants = require('./constants');
 
 mongoose.Promise = global.Promise;
 

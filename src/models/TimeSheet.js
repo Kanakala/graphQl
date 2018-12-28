@@ -1,9 +1,9 @@
-import mongoose, { Schema } from 'mongoose';
+const mongoose = require('mongoose');
 
-const timeSheetSchema = new Schema(
+const timeSheetSchema = new mongoose.Schema(
   {
     employee: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'employee'
     },
     date: Date,
@@ -15,4 +15,4 @@ const timeSheetSchema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model('timesheet', timeSheetSchema);
+module.exports = mongoose.model('timesheet', timeSheetSchema);

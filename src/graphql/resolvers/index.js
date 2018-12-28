@@ -1,9 +1,9 @@
-import EmployeeResolvers from './employee-resolvers';
-import TimeSheetResolvers from './timesheet-resolvers';
-import ISODate from '../scalars/ISODate';
-import ISOTime from '../scalars/ISOTime';
+const EmployeeResolvers = require('./employee-resolvers');
+const TimeSheetResolvers = require('./timesheet-resolvers');
+const ISODate = require('../scalars/ISODate');
+const ISOTime = require('../scalars/ISOTime');
 
-export default {
+module.exports = {
   Query: {
     searchEmployee: EmployeeResolvers.searchEmployee,
     getEmployee: EmployeeResolvers.getEmployeeById,

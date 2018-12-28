@@ -1,6 +1,6 @@
-import Employee from '../../models/Employee';
+const Employee = require('../../models/Employee');
 
-export default {
+module.exports = {
   getEmployeeById: (_, { _id }) => Employee.findById(_id),
   searchEmployee: (_, args) => Employee.findOne({ username: args.username }),
   autoFill: (_, args) =>

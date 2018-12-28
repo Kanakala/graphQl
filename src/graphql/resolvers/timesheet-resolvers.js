@@ -1,6 +1,6 @@
-import TimeSheet from '../../models/TimeSheet';
+const TimeSheet = require('../../models/TimeSheet');
 
-export default {
+module.exports = {
   getTimeSheetByEmployeeAndWeek: async (_, args) => {
     const timeSheet = await TimeSheet.find({
       employee: args.employee,

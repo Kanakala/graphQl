@@ -28,7 +28,7 @@ function parseLiteral(ast) {
   return ast.kind === Kind.STRING ? parseValue(ast.value) : null;
 }
 
-export default new GraphQLScalarType({
+module.exports = new GraphQLScalarType({
   name: 'ISODate',
   description: 'Moment Date object as an ISO timestamp',
   serialize,
