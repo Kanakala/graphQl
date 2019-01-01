@@ -3,8 +3,12 @@ const { createServer } = require('http');
 const module1 = require('./config/db');
 const constants = require('./config/constants');
 const middlewares = require('./config/middlewares');
+const cors = require('cors');
 
 const app = express(); // create an instance of express
+
+// Allow cross-origin
+app.use(cors());
 
 middlewares(app);
 

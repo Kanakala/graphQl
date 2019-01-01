@@ -10,12 +10,16 @@ module.exports = {
     autoFill: EmployeeResolvers.autoFill,
     getEmployees: EmployeeResolvers.getEmployees,
     getTimeSheetByEmployeeAndWeek:
-      TimeSheetResolvers.getTimeSheetByEmployeeAndWeek
+      TimeSheetResolvers.getTimeSheetByEmployeeAndWeek,
+    getTimeSheetById: TimeSheetResolvers.getTimeSheetById
   },
 
   Mutation: {
     addEmployee: EmployeeResolvers.addEmployee,
-    addTimeSheet: TimeSheetResolvers.addTimeSheet
+    editEmployee: EmployeeResolvers.editEmployee,
+    deleteEmployee: EmployeeResolvers.deleteEmployee,
+    addTimeSheet: TimeSheetResolvers.addTimeSheet,
+    editTimeSheet: TimeSheetResolvers.editTimeSheet
   },
 
   ISODate,

@@ -5,15 +5,19 @@
   "author": "Sumanth Kanakala",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=dev nodemon --exec node src/index.js"
+    "dev": "NODE_ENV=dev nodemon --exec node src/index.js",
+    "client": "npm start --prefix client",
+    "server": "npm run dev | npm run client"
   },
   "dependencies": {
     "apollo-server-express": "^1.2.0",
     "body-parser": "^1.18.2",
+    "cors": "^2.8.5",
     "express": "^4.16.2",
     "graphql": "^0.11.7",
     "graphql-date": "^1.0.3",
     "graphql-tools": "^2.7.2",
+    "lodash": "^4.17.11",
     "moment": "^2.23.0",
     "mongoose": "^4.13.0"
   }
