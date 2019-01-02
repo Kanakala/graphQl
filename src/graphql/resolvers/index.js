@@ -19,7 +19,8 @@ module.exports = {
     editEmployee: EmployeeResolvers.editEmployee,
     deleteEmployee: EmployeeResolvers.deleteEmployee,
     addTimeSheet: TimeSheetResolvers.addTimeSheet,
-    editTimeSheet: TimeSheetResolvers.editTimeSheet
+    editTimeSheet: TimeSheetResolvers.editTimeSheet,
+    deleteTimeSheet: TimeSheetResolvers.deleteTimeSheet
   },
 
   ISODate,

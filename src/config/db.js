@@ -5,17 +5,24 @@ mongoose.Promise = global.Promise;
 
 mongoose.set('debug', true); // debug mode on
 
+const authOptions =
+  process.env.NODE_ENV === 'test'
+    ? {
+        useMongoClient: true
+      }
+    : {
+        useMongoClient: true,
+        user: constants.MONGO_USERNAME,
+        pass: constants.MONGO_PASSWORD
+      };
+
 try {
   mongoose.connect(
     constants.DB_URL,
-    {
-      useMongoClient: true
-    }
+    authOptions
   );
 } catch (err) {
-  mongoose.createConnection(constants.DB_URL, {
-    useMongoClient: true
-  });
+  mongoose.createConnection(constants.DB_URL, authOptions);
 }
 
 mongoose.connection

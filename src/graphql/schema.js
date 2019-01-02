@@ -26,8 +26,13 @@ module.exports = `
     taskDesc: String
   }
 
+  type employeeWithCount {
+    employeesWithTimeSheets: [Employee]
+    totalCount: Int
+  }
+
   type Query {
-    getEmployees(fromDate: ISODate!, toDate:ISODate!): [Employee]
+    getEmployees(fromDate: ISODate!, toDate:ISODate!, page:Int, limit:Int): employeeWithCount
     getEmployee(_id:ID!): Employee
     searchEmployee(username:String!): Employee
     autoFill(search:String!): Employee
@@ -41,6 +46,7 @@ module.exports = `
     deleteEmployee(_id:ID!): Employee
     addTimeSheet(employee: ID!, date: ISODate!, start: ISOTime!, end: ISOTime!, title: String!, taskDesc: String): TimeSheet
     editTimeSheet(_id: ID!, start: ISOTime!, date: ISODate!, end: ISOTime!, title: String, taskDesc: String): TimeSheet
+    deleteTimeSheet(_id:ID!): TimeSheet
   }
 
   schema {

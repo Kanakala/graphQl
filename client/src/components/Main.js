@@ -4,6 +4,7 @@ import List from './List';
 import AddEmployee from './AddEmployee';
 import AddTimeSheet from './AddTimeSheet';
 import EditEmployee from './EditEmployee';
+import Filters from './Filters';
 import moment from 'moment';
 
 export class Main extends Component {
@@ -16,8 +17,10 @@ export class Main extends Component {
       .format('YYYY-MM-DD'),
     weekArray: [],
     containerData: 'LIST',
-    data: null
+    data: null,
+    pagination: { current: 1, pageSize: 3 }
   };
+
   componentDidMount() {
     var startOfWeek = moment().startOf('week');
     var endOfWeek = moment().endOf('week');
@@ -30,6 +33,31 @@ export class Main extends Component {
       day = day.clone().add(1, 'd');
     }
     this.setState({ weekArray: days });
+  }
+
+  handleTableChange(pagination) {
+    this.setState({ pagination });
+  }
+
+  handleDates(date) {
+    var startOfWeek = moment(date).startOf('week');
+    var endOfWeek = moment(date).endOf('week');
+    var days = [];
+    var day = startOfWeek;
+
+    while (day <= endOfWeek) {
+      days.push(day.toDate());
+      day = day.clone().add(1, 'd');
+    }
+    this.setState({
+      fromDate: moment(date)
+        .startOf('week')
+        .format('YYYY-MM-DD'),
+      toDate: moment(date)
+        .endOf('week')
+        .format('YYYY-MM-DD'),
+      weekArray: days
+    });
   }
 
   showForm = (data, type) => {
@@ -45,26 +73,22 @@ export class Main extends Component {
   };
 
   render() {
-    var startOfWeek = moment().startOf('week');
-    var endOfWeek = moment().endOf('week');
-
-    var days = [];
-    var day = startOfWeek;
-
-    while (day <= endOfWeek) {
-      days.push(day.toDate());
-      day = day.clone().add(1, 'd');
-    }
     return (
       <div>
         <Row style={{ marginTop: 50 }}>
-          <Col span={18} />
+          <Col span={18}>
+            <Filters
+              handleDates={this.handleDates.bind(this)}
+              containerData={this.state.containerData}
+            />
+          </Col>
           <Col span={6}>
             <AddEmployee
               fromDate={this.state.fromDate}
               toDate={this.state.toDate}
               weekArray={this.state.weekArray}
-              days={days}
+              pagination={this.state.pagination}
+              containerData={this.state.containerData}
             />
           </Col>
         </Row>
@@ -79,8 +103,10 @@ export class Main extends Component {
                 fromDate={this.state.fromDate}
                 toDate={this.state.toDate}
                 weekArray={this.state.weekArray}
-                days={days}
                 showForm={this.showForm}
+                showList={this.showList}
+                handleTableChange={this.handleTableChange.bind(this)}
+                pagination={this.state.pagination}
               />
             ) : this.state.containerData === 'EDITEMPLOYEE' ? (
               <EditEmployee
@@ -94,8 +120,8 @@ export class Main extends Component {
                 data={this.state.data}
                 fromDate={this.state.fromDate}
                 toDate={this.state.toDate}
-                days={days}
                 showList={this.showList}
+                weekArray={this.state.weekArray}
               />
             ) : (
               ''

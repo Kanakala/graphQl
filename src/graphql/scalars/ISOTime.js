@@ -14,10 +14,12 @@ function serialize(value) {
 function parseValue(value) {
   const date = '2019-01-01T' + value; // making a valid moment date by adding a random date to the give time
   const parsedTime = moment(date).isValid()
-    ? moment.duration(value).asSeconds()
+    ? value === '00:00'
+      ? 'zero'
+      : moment.duration(value).asSeconds()
     : null;
   if (parsedTime) {
-    return parsedTime;
+    return parsedTime === 'zero' ? 0 : parsedTime;
   } else {
     throw new Error('invalid time');
   }

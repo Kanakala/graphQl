@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Form, Input, Select, Row, Col, Popover, Icon, Button } from 'antd';
+import { Form, Input, Select, Row, Col, Button } from 'antd';
 import gql from 'graphql-tag';
-import { Mutation, ApolloConsumer } from 'react-apollo';
+import { Mutation } from 'react-apollo';
 
 const { Option } = Select;
 
@@ -76,14 +76,13 @@ const CollectionEditForm = Form.create()(
             )}
           </Form.Item>
           <Row>
-            <Col span={6} />
-            <Col span={6}>
+            <Col span={8} />
+            <Col span={2}>
               <Button onClick={onCancel} type="primary">
                 Cancel
               </Button>
             </Col>
-            <Col span={6} />
-            <Col span={6}>
+            <Col span={2}>
               <Button onClick={onEdit} type="primary">
                 Update
               </Button>
@@ -119,39 +118,7 @@ const EDIT_EMPLOYEE = gql`
   }
 `;
 
-const GET_EMPLOYEE_BY_ID = gql`
-  query GetEmployee($_id: ID!) {
-    getEmployee(_id: $_id) {
-      _id
-      username
-      email
-      age
-      department
-      TimeSheets {
-        date
-        start
-        end
-        title
-        taskDesc
-      }
-    }
-  }
-`;
-
 export class EditEmployee extends Component {
-  state = {
-    employee: null
-  };
-
-  showModalAndGetValues = async client => {
-    const employeeData = await client.query({
-      query: GET_EMPLOYEE_BY_ID,
-      variables: { _id: this.props._id }
-    });
-
-    this.setState({ employee: employeeData.data.getEmployee });
-  };
-
   handleCancel = () => {
     this.props.showList();
   };
@@ -169,6 +136,7 @@ export class EditEmployee extends Component {
       editEmployee({
         variables: { _id, username, email, age, department }
       });
+
       form.resetFields();
       this.props.showList();
     });
@@ -181,39 +149,18 @@ export class EditEmployee extends Component {
   render() {
     return (
       <div>
-        <ApolloConsumer>
-          {client => (
-            <Popover title="Edit Employee" trigger="hover">
-              <Icon
-                type="edit"
-                style={{ fontSize: 16, color: '#08c', marginRight: 10 }}
-                onClick={() => {
-                  this.showModalAndGetValues(client);
-                }}
-              />
-            </Popover>
-          )}
-        </ApolloConsumer>
         <Mutation
           mutation={EDIT_EMPLOYEE}
+          errorPolicy="all"
+          update={() => {
+            console.log('editEmployeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
+          }}
+          notifyOnNetworkStatusChange={true}
           onError={error => {
-            if (
-              error &&
-              error.toString() &&
-              error.toString().includes('username must be unique')
-            ) {
-              alert(
-                'There is already another user under this username, Please try with a new name'
-              );
-            } else if (
-              error &&
-              error.toString() &&
-              error.toString().includes('email must be unique')
-            ) {
-              alert(
-                'There is already another user under this email, Please try with a new email'
-              );
-            }
+            console.log(
+              'errorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr',
+              error
+            );
           }}
         >
           {(editEmployee, { loading, error }) => {
@@ -223,11 +170,10 @@ export class EditEmployee extends Component {
               <div>
                 <CollectionEditForm
                   wrappedComponentRef={this.saveFormRef}
-                  visible={this.state.visible}
                   onCancel={this.handleCancel}
                   employee={this.props.data.data.getEmployee}
                   onEdit={e => {
-                    this.handleEdit(e, editEmployee, error);
+                    this.handleEdit(e, editEmployee);
                   }}
                 />
               </div>

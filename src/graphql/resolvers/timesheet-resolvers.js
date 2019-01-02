@@ -22,19 +22,22 @@ module.exports = {
   },
   addTimeSheet: async (_, args) => {
     try {
+      if (args.start >= args.end) {
+        return new Error('start time must be greater than end time');
+      }
       const initialExists = await TimeSheet.findOne({
-        employeeId: args.employeeId,
+        employee: args.employee,
         date: args.date,
         start: { $gte: args.start, $lt: args.end }
       });
       const middleExists = await TimeSheet.findOne({
-        employeeId: args.employeeId,
+        employee: args.employee,
         date: args.date,
         start: { $lte: args.start },
         end: { $gte: args.end }
       });
       const finalExists = await TimeSheet.findOne({
-        employeeId: args.employeeId,
+        employee: args.employee,
         date: args.date,
         end: { $gt: args.start, $lte: args.end }
       });
@@ -59,19 +62,31 @@ module.exports = {
   editTimeSheet: async (_, args) => {
     try {
       const oldTimeSheet = await TimeSheet.findById(args._id);
+      const { start, end } = args;
+
+      if (!start) {
+        start = oldTimeSheet.start;
+      }
+      if (!end) {
+        end = oldTimeSheet.end;
+      }
+
+      if (start >= end) {
+        return new Error('start time must be greater than end time');
+      }
       const initialExists = await TimeSheet.find({
-        employeeId: oldTimeSheet.employeeId,
+        employee: oldTimeSheet.employee,
         date: args.date,
         start: { $gte: args.start, $lt: args.end }
       });
       const middleExists = await TimeSheet.find({
-        employeeId: oldTimeSheet.employeeId,
+        employee: oldTimeSheet.employee,
         date: args.date,
         start: { $lte: args.start },
         end: { $gte: args.end }
       });
       const finalExists = await TimeSheet.find({
-        employeeId: oldTimeSheet.employeeId,
+        employee: oldTimeSheet.employee,
         date: args.date,
         end: { $gt: args.start, $lte: args.end }
       });
@@ -106,6 +121,13 @@ module.exports = {
 
         return clonedTimeSheet;
       }
+    } catch (e) {
+      return e;
+    }
+  },
+  deleteTimeSheet: async (_, args) => {
+    try {
+      return TimeSheet.findByIdAndRemove(args._id);
     } catch (e) {
       return e;
     }

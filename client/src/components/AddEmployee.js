@@ -109,19 +109,32 @@ const ADD_EMPLOYEE = gql`
 `;
 
 const GET_EMPLOYEES = gql`
-  query GetEmployees($fromDate: ISODate!, $toDate: ISODate!) {
-    getEmployees(fromDate: $fromDate, toDate: $toDate) {
-      _id
-      username
-      email
-      TimeSheets {
+  query GetEmployees(
+    $fromDate: ISODate!
+    $toDate: ISODate!
+    $page: Int
+    $limit: Int
+  ) {
+    getEmployees(
+      fromDate: $fromDate
+      toDate: $toDate
+      page: $page
+      limit: $limit
+    ) {
+      employeesWithTimeSheets {
         _id
-        date
-        start
-        end
-        title
-        taskDesc
+        username
+        email
+        TimeSheets {
+          _id
+          date
+          start
+          end
+          title
+          taskDesc
+        }
       }
+      totalCount
     }
   }
 `;
@@ -163,74 +176,89 @@ export class AddEmployee extends Component {
   render() {
     return (
       <div>
-        <Button type="primary" onClick={this.showModal}>
-          New Employee
-        </Button>
-        <Mutation
-          mutation={ADD_EMPLOYEE}
-          update={(cache, { data: { addEmployee } }) => {
-            const employees = cache.readQuery({
-              query: GET_EMPLOYEES,
-              variables: {
-                fromDate: this.props.fromDate,
-                toDate: this.props.toDate
-              }
-            });
+        {this.props.containerData === 'LIST' && (
+          <div>
+            <Button type="primary" onClick={this.showModal}>
+              New Employee
+            </Button>
 
-            this.props.days.map(day => {
-              addEmployee[moment(day).format('YYYY-MM-DD')] = [];
-              return null;
-            });
+            <Mutation
+              mutation={ADD_EMPLOYEE}
+              update={(cache, { data: { addEmployee } }) => {
+                const employees = cache.readQuery({
+                  query: GET_EMPLOYEES,
+                  variables: {
+                    fromDate: this.props.fromDate,
+                    toDate: this.props.toDate,
+                    page: this.props.pagination.current,
+                    limit: this.props.pagination.pageSize
+                  }
+                });
 
-            cache.writeQuery({
-              query: GET_EMPLOYEES,
-              variables: {
-                fromDate: this.props.fromDate,
-                toDate: this.props.toDate
-              },
-              data: {
-                getEmployees: employees.getEmployees.concat([addEmployee])
-              }
-            });
-          }}
-          onError={error => {
-            if (
-              error &&
-              error.toString() &&
-              error.toString().includes('username must be unique')
-            ) {
-              alert(
-                'There is already another user under this username, Please try with a new name'
-              );
-            } else if (
-              error &&
-              error.toString() &&
-              error.toString().includes('email must be unique')
-            ) {
-              alert(
-                'There is already another user under this email, Please try with a new email'
-              );
-            }
-          }}
-        >
-          {(addEmployee, { loading, error }) => {
-            // if (loading) return <h4>Loading...</h4>;
-            return (
-              <div>
-                {this.state.visible && (
-                  <CollectionCreateForm
-                    wrappedComponentRef={this.saveFormRef}
-                    visible={this.state.visible}
-                    onCancel={this.handleCancel}
-                    onCreate={e => {
-                      this.handleCreate(e, addEmployee, error);
-                    }}
-                  />
-                )}
-              </div>
-            );
-          }}
-        </Mutation>
+                this.props.weekArray.map(day => {
+                  addEmployee[moment(day).format('YYYY-MM-DD')] = [];
+                  return null;
+                });
+
+                cache.writeQuery({
+                  query: GET_EMPLOYEES,
+                  variables: {
+                    fromDate: this.props.fromDate,
+                    toDate: this.props.toDate,
+                    page: this.props.pagination.current,
+                    limit: this.props.pagination.pageSize
+                  },
+                  data: {
+                    getEmployees: {
+                      employeesWithTimeSheets: employees.getEmployees.employeesWithTimeSheets.concat(
+                        [addEmployee]
+                      ),
+                      totalCount: employees.getEmployees + 1,
+                      __typename: 'employeeWithCount'
+                    }
+                  }
+                });
+              }}
+              onError={error => {
+                if (
+                  error &&
+                  error.toString() &&
+                  error.toString().includes('username must be unique')
+                ) {
+                  alert(
+                    'There is already another user under this username, Please try with a new name'
+                  );
+                } else if (
+                  error &&
+                  error.toString() &&
+                  error.toString().includes('email must be unique')
+                ) {
+                  alert(
+                    'There is already another user under this email, Please try with a new email'
+                  );
+                }
+              }}
+            >
+              {(addEmployee, { loading, error }) => {
+                // if (loading) return <h4>Loading...</h4>;
+                return (
+                  <div>
+                    {this.state.visible && (
+                      <CollectionCreateForm
+                        wrappedComponentRef={this.saveFormRef}
+                        visible={this.state.visible}
+                        onCancel={this.handleCancel}
+                        onCreate={e => {
+                          this.handleCreate(e, addEmployee, error);
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              }}
+            </Mutation>
+          </div>
+        )}
       </div>
     );
   }

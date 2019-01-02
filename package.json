@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "NODE_ENV=dev nodemon --exec node src/index.js",
     "client": "npm start --prefix client",
-    "server": "npm run dev | npm run client"
+    "server": "npm run dev | npm run client",
+    "test":
+      "NODE_ENV=test mocha --timeout 10000 --require ./test/it-helper.js --recursive ./test/integration/* && echo 'Done.'"
   },
   "dependencies": {
     "apollo-server-express": "^1.2.0",
@@ -20,5 +22,13 @@
     "lodash": "^4.17.11",
     "moment": "^2.23.0",
     "mongoose": "^4.13.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.2.0",
+    "mocha": "^5.2.0",
+    "mocha-prepare": "^0.1.0",
+    "mongo-unit": "https://github.com/Kanakala/mongo-test-unit",
+    "supertest": "^3.3.0"
   }
 }

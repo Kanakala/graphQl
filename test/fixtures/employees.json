@@ -1,0 +1,14 @@
+{
+  "employees": [
+    {
+      "_id": "5c25241784831106a2619ed6",
+      "updatedAt": "ISODate('2019-01-02T13:42:19.197Z')",
+      "createdAt": "ISODate('2019-01-02T13:42:19.197Z')",
+      "username": "sumanth",
+      "email": "sumanth@website.in",
+      "age": 25,
+      "department": "OPS",
+      "__v": 0
+    }
+  ]
+}

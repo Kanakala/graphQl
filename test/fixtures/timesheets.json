@@ -1,0 +1,15 @@
+{
+  "timesheets": [
+    {
+      "_id": "5c2a33ca58f89f769e126dfe",
+      "updatedAt": "ISODate('2018-12-31T15:20:42.725Z')",
+      "createdAt": "ISODate('2018-12-31T15:20:42.725Z')",
+      "employee": "5c25241784831106a2619ed6",
+      "date": "2018-12-30T00:00:00.000Z",
+      "start": 60,
+      "end": 120,
+      "title": "test",
+      "__v": 0
+    }
+  ]
+}

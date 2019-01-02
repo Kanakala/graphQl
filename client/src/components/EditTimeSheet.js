@@ -192,21 +192,21 @@ export class EditTimeSheet extends Component {
         <Mutation
           mutation={EDIT_TIMESHEET}
           onError={error => {
+            console.log(
+              'erorrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr',
+              error
+            );
             if (
               error &&
               error.toString() &&
-              error.toString().includes('username must be unique')
+              error
+                .toString()
+                .includes(
+                  'a timesheet exist already between the start and end time of the given date under the employee, please select different values'
+                )
             ) {
               alert(
-                'There is already another user under this username, Please try with a new name'
-              );
-            } else if (
-              error &&
-              error.toString() &&
-              error.toString().includes('email must be unique')
-            ) {
-              alert(
-                'There is already another user under this email, Please try with a new email'
+                'a timesheet exist already between the start and end time of the given date under the employee, please select different values'
               );
             }
           }}

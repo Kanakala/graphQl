@@ -3,7 +3,6 @@ import { Button, Form, Input, Row, Col, TimePicker } from 'antd';
 import gql from 'graphql-tag';
 import { Mutation } from 'react-apollo';
 import moment from 'moment';
-import * as _ from 'lodash';
 
 const timeFormat = 'HH:mm';
 
@@ -112,23 +111,6 @@ const ADD_TIMESHEET = gql`
   }
 `;
 
-const GET_EMPLOYEES = gql`
-  query GetEmployees($fromDate: ISODate!, $toDate: ISODate!) {
-    getEmployees(fromDate: $fromDate, toDate: $toDate) {
-      _id
-      username
-      email
-      TimeSheets {
-        date
-        start
-        end
-        title
-        taskDesc
-      }
-    }
-  }
-`;
-
 export class AddTimeSheet extends Component {
   handleCancel = () => {
     this.props.showList();
@@ -150,6 +132,7 @@ export class AddTimeSheet extends Component {
         variables: { employee, date, start, end, title, taskDesc }
       });
       form.resetFields();
+      this.props.showList();
     });
   };
 
@@ -162,83 +145,18 @@ export class AddTimeSheet extends Component {
       <div>
         <Mutation
           mutation={ADD_TIMESHEET}
-          update={async (cache, { data: { addTimeSheet } }) => {
-            const employees = await cache.readQuery({
-              query: GET_EMPLOYEES,
-              variables: {
-                fromDate: this.props.fromDate,
-                toDate: this.props.toDate
-              }
-            });
-
-            let that = this;
-
-            employees.getEmployees.map((employeeData, i) => {
-              const groupByDate = _.groupBy(employeeData.TimeSheets, 'date');
-              Object.keys(groupByDate).map(day => {
-                employees.getEmployees[i][moment(day).format('YYYY-MM-DD')] =
-                  groupByDate[day];
-                return null;
-              });
-              that.props.days.map(day => {
-                if (
-                  !employees.getEmployees[i][moment(day).format('YYYY-MM-DD')]
-                ) {
-                  employees.getEmployees[i][
-                    moment(day).format('YYYY-MM-DD')
-                  ] = [];
-                }
-                return null;
-              });
-              // delete data.getEmployees[i].TimeSheets;
-              return null;
-            });
-
-            let currentEmployeeIndex = _.findIndex(employees.getEmployees, {
-              _id: this.props.data.employeeId
-            });
-
-            let currentEmployee = employees.getEmployees[currentEmployeeIndex];
-
-            currentEmployee[this.props.data.currentDate] =
-              currentEmployee[this.props.data.currentDate] || [];
-            currentEmployee[this.props.data.currentDate].push(addTimeSheet);
-            currentEmployee.TimeSheets.push(addTimeSheet);
-
-            employees.getEmployees.splice(
-              currentEmployeeIndex,
-              1,
-              currentEmployee
-            );
-
-            await cache.writeQuery({
-              query: GET_EMPLOYEES,
-              variables: {
-                fromDate: this.props.fromDate,
-                toDate: this.props.toDate
-              },
-              data: {
-                getEmployees: employees.getEmployees
-              }
-            });
-            this.props.showList();
-          }}
           onError={error => {
             if (
               error &&
               error.toString() &&
-              error.toString().includes('username must be unique')
+              error
+                .toString()
+                .includes(
+                  'a timesheet exist already between the start and end time of the given date under the employee, please select different values'
+                )
             ) {
               alert(
-                'There is already another user under this username, Please try with a new name'
-              );
-            } else if (
-              error &&
-              error.toString() &&
-              error.toString().includes('email must be unique')
-            ) {
-              alert(
-                'There is already another user under this email, Please try with a new email'
+                'a timesheet exist already between the start and end time of the given date under the employee, please select different values'
               );
             }
           }}

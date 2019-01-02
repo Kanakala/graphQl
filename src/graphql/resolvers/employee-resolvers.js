@@ -14,18 +14,29 @@ module.exports = {
   autoFill: (_, args) =>
     Employee.findOne({ username: { $regex: '.*' + args.search + '.*' } }),
   getEmployees: async (_, args) => {
-    const employees = await Employee.find({});
+    const page = args.page || 1;
+    const limit = args.limit || 10;
+
+    const employees = await Employee.find({}, [], {
+      skip: (page - 1) * limit,
+      limit: limit
+    }).sort({
+      createdAt: -1
+    });
+
+    const totalCount = await Employee.count({});
+
     const employeesWithTimeSheets = await Promise.all(
       employees.map(async employee => {
         const timeSheetByEmployee = await TimeSheet.find({
           employee: employee._id,
           date: { $gte: new Date(args.fromDate), $lt: new Date(args.toDate) }
-        });
+        }).sort({ createdAt: -1 });
         employee.TimeSheets = timeSheetByEmployee;
         return employee;
       })
     );
-    return employeesWithTimeSheets;
+    return { employeesWithTimeSheets, totalCount };
   },
   addEmployee: async (_, args) => {
     try {

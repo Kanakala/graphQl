@@ -5,26 +5,26 @@ import { Mutation } from 'react-apollo';
 
 const confirm = Modal.confirm;
 
-const DELETE_EMPLOYEE = gql`
-  mutation DeleteEmployee($_id: ID!) {
-    deleteEmployee(_id: $_id) {
+const DELETE_TIMESHEET = gql`
+  mutation DeleteTimeSheet($_id: ID!) {
+    deleteTimeSheet(_id: $_id) {
       _id
     }
   }
 `;
 
-export class DeleteEmployee extends Component {
+export class DeleteTimeSheet extends Component {
   state = {
     visible: false
   };
 
-  showConfirm = (e, deleteEmployee) => {
+  showConfirm = (e, deleteTimeSheet) => {
     var that = this;
     confirm({
-      title: 'Do you want to delete this employee?',
+      title: 'Do you want to delete this timeSheet?',
       async onOk() {
         const _id = that.props._id;
-        await deleteEmployee({
+        await deleteTimeSheet({
           variables: { _id }
         });
         that.props.showList();
@@ -41,12 +41,12 @@ export class DeleteEmployee extends Component {
     return (
       <div>
         <Mutation
-          mutation={DELETE_EMPLOYEE}
+          mutation={DELETE_TIMESHEET}
           onError={error => {
             alert(error && error.toString());
           }}
         >
-          {(deleteEmployee, { loading, error }) => {
+          {(deleteTimeSheet, { loading, error }) => {
             // if (loading) return <h4>Loading...</h4>;
 
             return (
@@ -55,7 +55,7 @@ export class DeleteEmployee extends Component {
                   type="delete"
                   style={{ fontSize: 16, color: '#08c', marginRight: 10 }}
                   onClick={e => {
-                    this.showConfirm(e, deleteEmployee);
+                    this.showConfirm(e, deleteTimeSheet);
                   }}
                 />
               </Popover>
@@ -67,4 +67,4 @@ export class DeleteEmployee extends Component {
   }
 }
 
-export default DeleteEmployee;
+export default DeleteTimeSheet;
