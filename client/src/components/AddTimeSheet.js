@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Modal, Button, Form, Input, Row, Col, TimePicker } from 'antd';
+import { Button, Form, Input, Row, Col, TimePicker } from 'antd';
 import gql from 'graphql-tag';
 import { Mutation } from 'react-apollo';
 import moment from 'moment';
@@ -11,71 +11,76 @@ const CollectionCreateForm = Form.create()(
   // eslint-disable-next-line
   class extends React.Component {
     render() {
-      const { visible, onCancel, onCreate, form } = this.props;
+      const { onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
       return (
-        <Modal
-          visible={visible}
-          title="Create a new timesheet"
-          okText="Create"
-          onCancel={onCancel}
-          onOk={onCreate}
-        >
-          <Form layout="vertical">
-            <Row>
-              <Col span={6}>
-                <Form.Item label="Title">
-                  {getFieldDecorator('title', {
-                    rules: [
-                      {
-                        required: true,
-                        message: 'Please input a title'
-                      }
-                    ]
-                  })(<Input />)}
-                </Form.Item>
-              </Col>
-              <Col span={3} />
-              <Col span={6}>
-                <Form.Item label="Start Time">
-                  {getFieldDecorator('start', {
-                    rules: [
-                      {
-                        required: true,
-                        message: 'Please input your start time'
-                      }
-                    ],
-                    initialValue: moment('00:00', timeFormat)
-                  })(<TimePicker format={timeFormat} />)}
-                </Form.Item>
-              </Col>
-              <Col span={3} />
-              <Col span={6}>
-                <Form.Item label="Start Time">
-                  {getFieldDecorator('end', {
-                    rules: [
-                      {
-                        required: true,
-                        message: 'Please input your start time'
-                      }
-                    ],
-                    initialValue: moment('00:00', timeFormat)
-                  })(<TimePicker format={timeFormat} />)}
-                </Form.Item>
-              </Col>
-              <Col span={3} />
-            </Row>
-            <Form.Item label="Description">
-              {getFieldDecorator('taskDesc', {
-                rules: [
-                  {
-                    message: 'Please input a description!'
-                  }
-                ]
-              })(<Input type="textarea" />)}
-            </Form.Item>
-          </Form>
-        </Modal>
+        <Form layout="vertical">
+          <Row>
+            <Col span={6}>
+              <Form.Item label="Title">
+                {getFieldDecorator('title', {
+                  rules: [
+                    {
+                      required: true,
+                      message: 'Please input a title'
+                    }
+                  ]
+                })(<Input />)}
+              </Form.Item>
+            </Col>
+            <Col span={3} />
+            <Col span={6}>
+              <Form.Item label="Start Time">
+                {getFieldDecorator('start', {
+                  rules: [
+                    {
+                      required: true,
+                      message: 'Please input your start time'
+                    }
+                  ],
+                  initialValue: moment('00:00', timeFormat)
+                })(<TimePicker format={timeFormat} />)}
+              </Form.Item>
+            </Col>
+            <Col span={3} />
+            <Col span={6}>
+              <Form.Item label="Start Time">
+                {getFieldDecorator('end', {
+                  rules: [
+                    {
+                      required: true,
+                      message: 'Please input your start time'
+                    }
+                  ],
+                  initialValue: moment('00:00', timeFormat)
+                })(<TimePicker format={timeFormat} />)}
+              </Form.Item>
+            </Col>
+            <Col span={3} />
+          </Row>
+          <Form.Item label="Description">
+            {getFieldDecorator('taskDesc', {
+              rules: [
+                {
+                  message: 'Please input a description!'
+                }
+              ]
+            })(<Input type="textarea" />)}
+          </Form.Item>
+          <Row>
+            <Col span={8} />
+            <Col span={2}>
+              <Button onClick={onCancel} type="primary">
+                Cancel
+              </Button>
+            </Col>
+            <Col span={2}>
+              <Button onClick={onCreate} type="primary">
+                Create
+              </Button>
+            </Col>
+          </Row>
+        </Form>
       );
     }
   }
@@ -125,16 +130,8 @@ const GET_EMPLOYEES = gql`
 `;
 
 export class AddTimeSheet extends Component {
-  state = {
-    visible: false
-  };
-
-  showModal = () => {
-    this.setState({ visible: true });
-  };
-
   handleCancel = () => {
-    this.setState({ visible: false });
+    this.props.showList();
   };
 
   handleCreate = (e, addTimeSheet) => {
@@ -143,8 +140,8 @@ export class AddTimeSheet extends Component {
       if (err) {
         return err;
       }
-      const date = this.props.date;
-      const employee = this.props._id;
+      const date = this.props.data.currentDate;
+      const employee = this.props.data.employeeId;
       let { start, end, title, taskDesc } = values;
       start = moment(start).format('HH:mm');
       end = moment(end).format('HH:mm');
@@ -153,7 +150,6 @@ export class AddTimeSheet extends Component {
         variables: { employee, date, start, end, title, taskDesc }
       });
       form.resetFields();
-      this.setState({ visible: false });
     });
   };
 
@@ -164,13 +160,10 @@ export class AddTimeSheet extends Component {
   render() {
     return (
       <div>
-        <Button type="primary" onClick={this.showModal}>
-          Add Time
-        </Button>
         <Mutation
           mutation={ADD_TIMESHEET}
-          update={(cache, { data: { addTimeSheet } }) => {
-            const employees = cache.readQuery({
+          update={async (cache, { data: { addTimeSheet } }) => {
+            const employees = await cache.readQuery({
               query: GET_EMPLOYEES,
               variables: {
                 fromDate: this.props.fromDate,
@@ -178,14 +171,38 @@ export class AddTimeSheet extends Component {
               }
             });
 
-            let currentEmployeeIndex = _.findIndex(employees.getEmployees, {
-              _id: this.props._id
+            let that = this;
+
+            employees.getEmployees.map((employeeData, i) => {
+              const groupByDate = _.groupBy(employeeData.TimeSheets, 'date');
+              Object.keys(groupByDate).map(day => {
+                employees.getEmployees[i][moment(day).format('YYYY-MM-DD')] =
+                  groupByDate[day];
+                return null;
+              });
+              that.props.days.map(day => {
+                if (
+                  !employees.getEmployees[i][moment(day).format('YYYY-MM-DD')]
+                ) {
+                  employees.getEmployees[i][
+                    moment(day).format('YYYY-MM-DD')
+                  ] = [];
+                }
+                return null;
+              });
+              // delete data.getEmployees[i].TimeSheets;
+              return null;
             });
+
+            let currentEmployeeIndex = _.findIndex(employees.getEmployees, {
+              _id: this.props.data.employeeId
+            });
+
             let currentEmployee = employees.getEmployees[currentEmployeeIndex];
 
-            currentEmployee[this.props.date] =
-              currentEmployee[this.props.date] || [];
-            currentEmployee[this.props.date].push(addTimeSheet);
+            currentEmployee[this.props.data.currentDate] =
+              currentEmployee[this.props.data.currentDate] || [];
+            currentEmployee[this.props.data.currentDate].push(addTimeSheet);
             currentEmployee.TimeSheets.push(addTimeSheet);
 
             employees.getEmployees.splice(
@@ -194,7 +211,7 @@ export class AddTimeSheet extends Component {
               currentEmployee
             );
 
-            cache.writeQuery({
+            await cache.writeQuery({
               query: GET_EMPLOYEES,
               variables: {
                 fromDate: this.props.fromDate,
@@ -204,6 +221,7 @@ export class AddTimeSheet extends Component {
                 getEmployees: employees.getEmployees
               }
             });
+            this.props.showList();
           }}
           onError={error => {
             if (
@@ -229,16 +247,13 @@ export class AddTimeSheet extends Component {
             // if (loading) return <h4>Loading...</h4>;
             return (
               <div>
-                {this.state.visible && (
-                  <CollectionCreateForm
-                    wrappedComponentRef={this.saveFormRef}
-                    visible={this.state.visible}
-                    onCancel={this.handleCancel}
-                    onCreate={e => {
-                      this.handleCreate(e, addTimeSheet, error);
-                    }}
-                  />
-                )}
+                <CollectionCreateForm
+                  wrappedComponentRef={this.saveFormRef}
+                  onCancel={this.handleCancel}
+                  onCreate={e => {
+                    this.handleCreate(e, addTimeSheet, error);
+                  }}
+                />
               </div>
             );
           }}

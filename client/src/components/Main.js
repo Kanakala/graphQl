@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Row, Col } from 'antd';
 import List from './List';
 import AddEmployee from './AddEmployee';
+import AddTimeSheet from './AddTimeSheet';
+import EditEmployee from './EditEmployee';
 import moment from 'moment';
 
 export class Main extends Component {
@@ -12,10 +14,11 @@ export class Main extends Component {
     toDate: moment()
       .endOf('week')
       .format('YYYY-MM-DD'),
-    weekArray: []
+    weekArray: [],
+    containerData: 'LIST',
+    data: null
   };
   componentDidMount() {
-    console.log('111111111111111111111111111111111111111111111111111111111');
     var startOfWeek = moment().startOf('week');
     var endOfWeek = moment().endOf('week');
 
@@ -28,6 +31,19 @@ export class Main extends Component {
     }
     this.setState({ weekArray: days });
   }
+
+  showForm = (data, type) => {
+    this.setState({
+      containerData: type,
+      data
+    });
+  };
+  showList = () => {
+    this.setState({
+      containerData: 'LIST'
+    });
+  };
+
   render() {
     var startOfWeek = moment().startOf('week');
     var endOfWeek = moment().endOf('week');
@@ -58,12 +74,32 @@ export class Main extends Component {
         <Row>
           <Col span={4} />
           <Col span={16}>
-            <List
-              fromDate={this.state.fromDate}
-              toDate={this.state.toDate}
-              weekArray={this.state.weekArray}
-              days={days}
-            />
+            {this.state.containerData === 'LIST' ? (
+              <List
+                fromDate={this.state.fromDate}
+                toDate={this.state.toDate}
+                weekArray={this.state.weekArray}
+                days={days}
+                showForm={this.showForm}
+              />
+            ) : this.state.containerData === 'EDITEMPLOYEE' ? (
+              <EditEmployee
+                fromDate={this.state.fromDate}
+                toDate={this.state.toDate}
+                data={this.state.data}
+                showList={this.showList}
+              />
+            ) : this.state.containerData === 'ADDTIMESHEET' ? (
+              <AddTimeSheet
+                data={this.state.data}
+                fromDate={this.state.fromDate}
+                toDate={this.state.toDate}
+                days={days}
+                showList={this.showList}
+              />
+            ) : (
+              ''
+            )}
           </Col>
           <Col span={4} />
         </Row>

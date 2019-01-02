@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { Table, Row, Col, Popover, Icon } from 'antd';
+import { Table, Row, Col, Popover, Icon, Button } from 'antd';
 import gql from 'graphql-tag';
-import { Query } from 'react-apollo';
-import EditEmployee from './EditEmployee';
+import { Query, ApolloConsumer } from 'react-apollo';
 import DeleteEmployee from './DeleteEmployee';
 import AddTimeSheet from './AddTimeSheet';
 import EditTimeSheet from './EditTimeSheet';
@@ -27,7 +26,42 @@ const GET_EMPLOYEES = gql`
   }
 `;
 
+const GET_EMPLOYEE_BY_ID = gql`
+  query GetEmployee($_id: ID!) {
+    getEmployee(_id: $_id) {
+      _id
+      username
+      email
+      age
+      department
+      TimeSheets {
+        date
+        start
+        end
+        title
+        taskDesc
+      }
+    }
+  }
+`;
+
 export class List extends Component {
+  showFormAndGetValues = async (client, employeeId) => {
+    const employeeData = await client.query({
+      query: GET_EMPLOYEE_BY_ID,
+      variables: { _id: employeeId }
+    });
+
+    this.props.showForm(employeeData, 'EDITEMPLOYEE');
+  };
+
+  showAddTimeSheetFormAndGetValues = async (employeeId, weekDay) => {
+    this.props.showForm(
+      { employeeId, currentDate: moment(weekDay).format('YYYY-MM-DD') },
+      'ADDTIMESHEET'
+    );
+  };
+
   render() {
     let columns = [
       {
@@ -36,20 +70,28 @@ export class List extends Component {
         key: 'username',
         render: (text, record) => (
           <Row key={record._id}>
-            {console.log(
-              'idddddddddddddddddddddddddddddddddddddddddddddddddddddd',
-              record._id
-            )}
             {record.username}
             <Col span={3}>
-              <EditEmployee
-                fromDate={this.props.fromDate}
-                toDate={this.props.toDate}
-                _id={record._id}
-              />
+              <ApolloConsumer>
+                {client => (
+                  <Popover title="Edit Employee" trigger="hover">
+                    <Icon
+                      type="edit"
+                      style={{ fontSize: 16, color: '#08c', marginRight: 10 }}
+                      onClick={() => {
+                        this.showFormAndGetValues(client, record._id);
+                      }}
+                    />
+                  </Popover>
+                )}
+              </ApolloConsumer>
             </Col>
             <Col span={3}>
-              <DeleteEmployee _id={record._id} />
+              <DeleteEmployee
+                _id={record._id}
+                fromDate={this.props.fromDate}
+                toDate={this.props.toDate}
+              />
             </Col>
           </Row>
         )
@@ -83,12 +125,14 @@ export class List extends Component {
                   );
                 })}
                 <br />
-                <AddTimeSheet
-                  _id={record._id}
-                  date={moment(weekDay).format('YYYY-MM-DD')}
-                  fromDate={this.props.fromDate}
-                  toDate={this.props.toDate}
-                />
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    this.showAddTimeSheetFormAndGetValues(record._id, weekDay);
+                  }}
+                >
+                  Add Time
+                </Button>
               </div>
             );
             dayWiseSheets = dayWiseSheets.map(timeSheet => {
@@ -119,6 +163,7 @@ export class List extends Component {
                 date={moment(weekDay).format('YYYY-MM-DD')}
                 fromDate={this.props.fromDate}
                 toDate={this.props.toDate}
+                days={this.props.days}
               />
             );
             return (
@@ -151,19 +196,8 @@ export class List extends Component {
           {({ loading, error, data }) => {
             // if (loading) return <h4>Loading...</h4>;
             if (error) console.log('errorerrorerrorerrorerrorerror', error);
-            console.log(
-              'this.propsssssssssssssssssssssssssssssssssssssssssssssssssss',
-              this.props
-            );
-            console.log(
-              'loadingggggggggggggggggggggggggggggggggggggggggggggggggggg',
-              loading
-            );
-            console.log(
-              'dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-              data
-            );
-            if (data.getEmployees) {
+
+            if (data.getEmployees && data.getEmployees.length) {
               data.getEmployees.map((employeeData, i) => {
                 const groupByDate = _.groupBy(employeeData.TimeSheets, 'date');
                 Object.keys(groupByDate).map(day => {

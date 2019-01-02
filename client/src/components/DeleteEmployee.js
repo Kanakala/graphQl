@@ -15,11 +15,19 @@ const DELETE_EMPLOYEE = gql`
 `;
 
 const GET_EMPLOYEES = gql`
-  {
-    getEmployees {
+  query GetEmployees($fromDate: ISODate!, $toDate: ISODate!) {
+    getEmployees(fromDate: $fromDate, toDate: $toDate) {
+      _id
       username
       email
-      _id
+      TimeSheets {
+        _id
+        date
+        start
+        end
+        title
+        taskDesc
+      }
     }
   }
 `;
@@ -29,13 +37,13 @@ export class DeleteEmployee extends Component {
     visible: false
   };
 
-  showConfirm = async (e, deleteEmployee) => {
+  showConfirm = (e, deleteEmployee) => {
     var that = this;
     confirm({
       title: 'Do you want to delete this employee?',
-      onOk() {
+      async onOk() {
         const _id = that.props._id;
-        deleteEmployee({
+        await deleteEmployee({
           variables: { _id }
         });
       },
@@ -53,8 +61,22 @@ export class DeleteEmployee extends Component {
         <Mutation
           mutation={DELETE_EMPLOYEE}
           update={(cache, { data: { deleteEmployee } }) => {
-            const employees = cache.readQuery({ query: GET_EMPLOYEES });
+            console.log(
+              'deleteEmployeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+              deleteEmployee
+            );
+            const employees = cache.readQuery({
+              query: GET_EMPLOYEES,
+              variables: {
+                fromDate: this.props.fromDate,
+                toDate: this.props.toDate
+              }
+            });
 
+            console.log(
+              'employeesssssssssssssssssssssssssssssssssssss11111111111111111111111111111111111111111111',
+              employees
+            );
             _.remove(employees.getEmployees, {
               _id: deleteEmployee._id
             });
@@ -64,6 +86,10 @@ export class DeleteEmployee extends Component {
                 getEmployees: employees.getEmployees
               }
             });
+            console.log(
+              'employeessssssssssssssssssssssssssssssssssss2222222222222222222222222222222222222222222222222222222222',
+              employees
+            );
           }}
           onError={error => {
             alert(error && error.toString());
