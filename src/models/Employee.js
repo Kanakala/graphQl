@@ -10,31 +10,31 @@ const employeeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-employeeSchema.post('save', function(error, doc, next) {
+employeeSchema.post('save', (error, doc, next) => {
   if (error.name === 'MongoError' && error.code === 11000) {
     if (error.errmsg.includes('username')) {
-      next(new Error('username must be unique'));
+      return next(new Error('username must be unique'));
     } else if (error.errmsg.includes('email')) {
-      next(new Error('email must be unique'));
+      return next(new Error('email must be unique'));
     } else {
-      next(error);
+      return next(error);
     }
   } else {
-    next(error);
+    return next(error);
   }
 });
 
-employeeSchema.post('findOneAndUpdate', function(error, doc, next) {
+employeeSchema.post('findOneAndUpdate', (error, doc, next) => {
   if (error.name === 'MongoError' && error.code === 11000) {
     if (error.errmsg.includes('username')) {
-      next(new Error('username must be unique'));
+      return next(new Error('username must be unique'));
     } else if (error.errmsg.includes('email')) {
-      next(new Error('email must be unique'));
+      return next(new Error('email must be unique'));
     } else {
-      next(error);
+      return next(error);
     }
   } else {
-    next(error);
+    return next(error);
   }
 });
 

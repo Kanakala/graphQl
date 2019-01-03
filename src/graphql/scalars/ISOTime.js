@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 const { Kind } = require('graphql/language');
 const { GraphQLScalarType } = require('graphql');
 const moment = require('moment');

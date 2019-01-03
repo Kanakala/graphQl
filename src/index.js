@@ -1,6 +1,8 @@
+/* eslint-disable no-unused-vars */
+
 const express = require('express');
 const { createServer } = require('http');
-const module1 = require('./config/db');
+const loadDb = require('./config/db');
 const constants = require('./config/constants');
 const middlewares = require('./config/middlewares');
 const cors = require('cors');
